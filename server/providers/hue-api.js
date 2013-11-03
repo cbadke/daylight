@@ -4,76 +4,49 @@ var fs = require('fs'),
     apikey = '',
     bridgeIP = '';
 
-var configureAPI = function() {
-    fs.readFile('api.key', 'utf8', function(err, data) {
-        apikey = data.trim();
-    });
-
+var httpGET = function(hostname, path, success, failure) {
     var options = {
-        host: 'www.meethue.com',
+        host: hostname,
         port: 80,
-        path: '/api/nupnp',
+        path: path,
         method: 'GET'
     };
 
     http.get(options, function(res) {
         res.on('data', function (chunk) {
-            data = JSON.parse(chunk);
-            bridgeIP = data[0].internalipaddress;
+            success(JSON.parse(chunk));
         });
     }).on('error', function(err) {
-        console.log(err);
+        failure(err);
     });
 };
 
-var getLightDetails = function(id){
+var hueGET = function(apiCall){
     return new Promise(function (resolve, reject) {
-        var options = {
-            host: bridgeIP,
-           port: 80,
-           path: '/api/' + apikey + '/lights/' + id,
-           method: 'GET'
-        };
+        httpGET(bridgeIP, '/api/' + apikey + '/' + apiCall, resolve, reject);
+    });
+};
 
-        http.get(options, function(res) {
-            res.on('data', function (chunk) {
-                console.log(JSON.parse(chunk));
-                resolve(JSON.parse(chunk));
+exports.reconfigure = function() {
+    fs.readFile('api.key', 'utf8', function(err, data) {
+        apikey = data.trim();
+    });
+
+    httpGET('www.meethue.com', 
+            '/api/nupnp', 
+            function(data){ 
+                bridgeIP = data[0].internalipaddress;
             });
-        }).on('error', function(err) {
-            reject(err);
-        });
-    });
 };
 
-var getLights = function(){
-    return new Promise(function (resolve, reject) {
-        var options = {
-            host: bridgeIP,
-            port: 80,
-            path: '/api/' + apikey + '/lights',
-            method: 'GET'
-        };
-
-        http.get(options, function(res) {
-            res.on('data', function (chunk) {
-                console.log(JSON.parse(chunk));
-                resolve(JSON.parse(chunk));
-             });
-        }).on('error', function(err) {
-            reject(err);
-        });
-    });
-};
-
-exports.reconfigure = configureAPI;
 exports.lights = function() {
-    return getLights().then(function(lights){
-        var details = Object.keys(lights).map(getLightDetails);
+    return hueGET('lights').then(function(lights){
+        var getDetails = function(id) {
+            return hueGET('lights/'+id);
+        };
+        var details = Object.keys(lights).map(getDetails);
         return Promise.all(details);
-    },
-    console.log
-    );
+    });
 }
 
-configureAPI();
+exports.reconfigure();
