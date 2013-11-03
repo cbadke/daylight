@@ -5,7 +5,7 @@ exports.configureRoutes = function(app){
 	app.get('/', routes.index);
 
     app.get('/api/lights', function(req, res, next){
-        api.lights(function(data) {
+        api.lights().done(function(data) {
             res.json(data);
         });
     });

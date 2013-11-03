@@ -1,4 +1,5 @@
 var fs = require('fs'),
+    Promise = require('promise'),
     http = require('http'),
     apikey = '',
     bridgeIP = '';
@@ -25,24 +26,54 @@ var configureAPI = function() {
     });
 };
 
-exports.reconfigure = configureAPI;
-exports.lights = function(callback) {
+var getLightDetails = function(id){
+    return new Promise(function (resolve, reject) {
+        var options = {
+            host: bridgeIP,
+           port: 80,
+           path: '/api/' + apikey + '/lights/' + id,
+           method: 'GET'
+        };
 
-    var options = {
-        host: bridgeIP,
-        port: 80,
-        path: '/api/' + apikey + '/lights',
-        method: 'GET'
-    };
-
-    http.get(options, function(res) {
-        res.on('data', function (chunk) {
-             callback(JSON.parse(chunk));
+        http.get(options, function(res) {
+            res.on('data', function (chunk) {
+                console.log(JSON.parse(chunk));
+                resolve(JSON.parse(chunk));
+            });
+        }).on('error', function(err) {
+            reject(err);
         });
-    }).on('error', function(err) {
-        console.log(err);
     });
+};
 
+var getLights = function(){
+    return new Promise(function (resolve, reject) {
+        var options = {
+            host: bridgeIP,
+            port: 80,
+            path: '/api/' + apikey + '/lights',
+            method: 'GET'
+        };
+
+        http.get(options, function(res) {
+            res.on('data', function (chunk) {
+                console.log(JSON.parse(chunk));
+                resolve(JSON.parse(chunk));
+             });
+        }).on('error', function(err) {
+            reject(err);
+        });
+    });
+};
+
+exports.reconfigure = configureAPI;
+exports.lights = function() {
+    return getLights().then(function(lights){
+        var details = Object.keys(lights).map(getLightDetails);
+        return Promise.all(details);
+    },
+    console.log
+    );
 }
 
 configureAPI();
