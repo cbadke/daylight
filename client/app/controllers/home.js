@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('hueNode').controller('HomeCtrl', ['$scope', '$resource',
+angular.module('daylight').controller('HomeCtrl', ['$scope', '$resource',
     function($scope, $resource){
 
         var Lights = $resource('/api/lights');
