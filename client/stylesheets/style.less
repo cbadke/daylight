@@ -1,0 +1,34 @@
+.main {
+    padding-top: 50px;
+}
+
+.light {
+    .state {
+        float: left;
+    }
+    .details {
+        float: left;
+        display: table-cell;
+        vertical-align: middle;
+        height: 100%;
+    }
+    .end {
+        clear: both;
+    }
+    margin: 10px;
+    border: 1px solid;
+}
+
+@light-size: 96px;
+
+.light-off {
+    width: @light-size;
+    height: @light-size;
+    background-image: url(/images/light-off.png);
+}
+
+.light-on {
+    width: @light-size;
+    height: @light-size;
+    background-image: url(/images/light-on.png);
+}
