@@ -1,4 +1,4 @@
-angular.module('daylight', ['ngResource'])
+angular.module('daylight', ['ngResource', 'ngRoute'])
 .config(['$routeProvider', function($routeProvider){
 	$routeProvider
 		.when('/', {

@@ -1,13 +1,20 @@
 'use strict';
 
-angular.module('daylight').controller('HomeCtrl', ['$scope', '$resource',
+angular.module('daylight').controller('HomeCtrl',
     function($scope, $resource){
 
-        var Lights = $resource('/api/lights');
+        var Lights = $resource('/api/lights/:id', {},
+                    { toggle: {
+                                method : 'POST',
+                                url : '/api/lights/:id/toggle'
+                              }
+                    });
 
         $scope.toggle = function(light) {
-          light.state.on = !light.state.on;
+          Lights.toggle({id : light.id}, {}, function(data){
+            light.state.on = data.newState;
+          });
         };
 
         $scope.lights = Lights.query();
-    }]); 
+    }); 
